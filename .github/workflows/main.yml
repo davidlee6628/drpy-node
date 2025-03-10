@@ -1,0 +1,34 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # 每 6 小时同步一次（可自定义）
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 配置 Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: 添加上游仓库
+        run: git remote add upstream ${{ secrets.UPSTREAM_REPO }}
+
+      - name: 拉取上游变更
+        run: git fetch upstream
+
+      - name: 合并到本地分支
+        run: |
+          git checkout main  # 替换为你的分支名
+          git merge upstream/main --no-edit
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
