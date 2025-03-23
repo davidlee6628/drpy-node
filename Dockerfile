@@ -1,50 +1,80 @@
-# 构建器阶段
-# 使用node:current-alpine3.21作为基础镜像
-FROM node:current-alpine3.21 AS builder
+# 构建阶段
+FROM node:18-alpine3.21 AS builder
 
-# 安装git
-RUN apk add --no-cache git
+RUN apk add --no-cache git python3 make g++ && \
+    git config --global http.version HTTP/1.1
 
-# 如果您需要配置git以使用特定的HTTP版本，请确保这是出于必要和安全考虑
-RUN git config --global http.version HTTP/1.1
-
-# 创建一个工作目录
 WORKDIR /app
+RUN git clone https://github.com/davidlee6628/drpy-node.git . && \
+    npm config set registry https://registry.npmmirror.com && \
+    npm install -g pm2
 
-# 克隆GitHub仓库到工作目录
-RUN git clone https://github.com/hjdhnx/drpy-node.git .
+ENV YARN_IGNORE_ENGINES=1
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+RUN yarn install --production=false --network-timeout 300000 && \
+    yarn add puppeteer && \
+    rm -rf /usr/local/lib/node_modules/npm && \
+    rm -rf /root/.npm /root/.cache
 
-# 设置npm镜像为npmmirror
-RUN npm config set registry https://registry.npmmirror.com
+RUN mkdir -p /tmp/drpys && \
+    cp -ra /app/. /tmp/drpys/
 
-# 全局安装pm2工具(yarn已经自带了不需要再自己装)
+# 运行时阶段
+FROM alpine:3.21
+
+# 安装基础依赖和编译工具
+RUN apk update && apk add --no-cache \
+    nodejs \
+    npm \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    python3 \
+    make \
+    g++ && \
+    rm -rf /var/cache/apk/*
+
+# 安装 PM2
 RUN npm install -g pm2
 
-# 安装项目依赖项和puppeteer
-RUN yarn && yarn add puppeteer
+# 安装中文字体
+RUN mkdir -p /usr/share/fonts/noto-cjk && \
+    wget -qO /tmp/NotoSansCJKsc-hinted.zip https://noto-website-2.storage.googleapis.com/pkgs/NotoSansCJKsc-hinted.zip && \
+    unzip /tmp/NotoSansCJKsc-hinted.zip -d /usr/share/fonts/noto-cjk && \
+    rm /tmp/NotoSansCJKsc-hinted.zip && \
+    fc-cache -fv
 
-# 复制工作目录中的所有文件到一个临时目录中
-# 以便在运行器阶段中使用
-RUN mkdir /tmp/drpys && cp -r /app/* /tmp/drpys/
+# 配置证书
+RUN ln -s /etc/ssl/certs /usr/local/share/ca-certificates && \
+    update-ca-certificates
 
-# 运行器阶段
-# 使用alpine:latest作为基础镜像来创建一个更小的镜像
-# 但是无法用pm2
-FROM alpine:latest AS runner
+# 环境变量
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    NODE_ENV=production \
+    NODE_OPTIONS="--max-old-space-size=512"
 
-# 创建一个工作目录
+# 复制应用
 WORKDIR /app
-
-# 复制构建器阶段中准备好的文件和依赖项到运行器阶段的工作目录中
 COPY --from=builder /tmp/drpys /app
 
-# 安装Node.js运行时（如果需要的话，这里已经假设在构建器阶段中安装了所有必要的Node.js依赖项）
-# 由于我们已经将node_modules目录复制到了运行器阶段，因此这里不需要再次安装npm或node_modules中的依赖项
-# 但是，我们仍然需要安装Node.js运行时本身（除非drpys项目是一个纯静态资源服务，不需要Node.js运行时）
-RUN apk add --no-cache nodejs
+# 权限配置
+RUN adduser -D node -G root && \
+    chown -R node:root /app && \
+    chmod -R 775 /app
 
-# 暴露应用程序端口（根据您的项目需求调整）
+# 暴露端口和健康检查
 EXPOSE 5757
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD node healthcheck.js || exit 1
 
-# 指定容器启动时执行的命令
-CMD ["node", "index.js"]
+# 启动命令
+USER node
+CMD ["pm2-runtime", "start", "index.js"]
+
+
+
+
+
