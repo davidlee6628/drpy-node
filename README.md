@@ -1,87 +1,50 @@
 # drpyS(drpy-node)
 
 nodejs作为服务端的drpy实现。全面升级异步写法  
-~~积极开发中，每日一更~~，当前进度 `49%`  
-找工作中，随缘更新
+~~积极开发中，每日一更~~，当前进度 `68%`  
+~~找工作中，随缘更新~~  
+上班当牛马，下班要带娃，阶段性佛系趁娃睡觉熬夜更新
 
-* [本地配置接口-动态本地](/config?pwd=)
-* [本地配置接口-动态外网/局域网](/config/1?pwd=)
+* [本地配置接口-动态本地](/config?pwd=$pwd)
+* [本地配置接口-动态外网/局域网](/config/1?pwd=$pwd)
 * [其他配置接口-订阅过滤](/docs/sub.md)
 * [代码加解密工具](/admin/encoder)
 * [V我50支付凭证生成器](/authcoder?len=10&number=1)
 * [接口压测教程](/docs/httpTest.md)
 * [央视点播解析工具](/proxy/央视大全[官]/index.html)
 * [cookie管理插件](/apps/cookie-butler/index.html)
+* [cron表达式插件](/apps/cron-generator/index.html)
+* [一些接口说明](docs/apidoc.md)
 * [本站防止爬虫协议](/robots.txt)
 * [本项目主页-免翻](https://git-proxy.playdreamer.cn/hjdhnx/drpy-node)
 * [DS源适配猫影视](https://github.com/hjdhnx/CatPawOpen/tree/ds-cat)
+* [drpy2打包项目](https://github.com/hjdhnx/drpy-webpack)
 * [在线猫ds源主页](/cat/index.html)
 
 ## 更新记录
 
-### 20250310
+### 20250810
 
-更新至V1.1.23
+更新至V1.2.8
 
-### 20250227
+### 20250808
 
-更新至V1.1.22
+更新至V1.2.7
 
-### 20250226
+### 20250805
 
-更新至V1.1.21
+更新至V1.2.6
 
-### 20250225
+### 20250804
 
-更新至V1.1.20
-
-### 20250224
-
-更新至V1.1.19
-
-### 20250211
-
-更新至V1.1.18
-
-### 20250206
-
-更新至V1.1.17
-
-### 20250123
-
-更新至V1.1.16
-
-### 20250122
-
-更新至V1.1.15
-
-1. ds源和dr2源增加装逼壳图标支持
-
-### 20250121
-
-更新至V1.1.14
-
-1. 猫源ds在线配置支持接口密码
-2. 新增源
-3. 磁盘加速
-
-### 20250120
-
-更新至V1.1.13
-
-1. 完善猫在线配置
-
-### 20250117
-
-本次未更新版本
-
-1. 新开项目，使ds源适用于新版猫影视 [猫爪catpwd](https://github.com/CatPawApp/CatPawOpen)
+更新至V1.2.5
 
 [点此查看完整更新记录](docs/updateRecord.md)
 
 **注意事项**
 
-总是有人遇到各种奇葩问题，像什么没弹幕，访问/config/1服务马上崩溃等等，能自行解决最好，解决不了我建议你使用下方安装教程 `3.道长腾讯轻量云服务器安装方案`
+总是有人遇到各种奇葩问题，像什么没弹幕，访问/config/1服务马上崩溃等等，能自行解决最好，解决不了我建议你使用下方安装教程
+`3.道长腾讯轻量云服务器安装方案`
 跟我一样还有问题那就不可能了，我能用你即能用
 
 ## 基础框架
@@ -108,10 +71,13 @@ todo:
 * [puppeteer使用教程](docs/pupInstall.md)
 * [drpyS源属性说明](docs/ruleAttr.md)
 * [drpy2写源简述](docs/ruleDesc.md)
+* [关姐算法搭建说明](docs/suanfa.md)
 
 ## 问题说明
 
 1. windows上直接运行index.js可能会发现运行过程中的日志打印出中文乱码。建议通过yarn dev运行或者在package.json里点击dev脚本运行
+2. `pinyin` 库依赖的 `nodejieba` 跑路了现在无法完成安装
+3. `new Promise` 里发生的错误无法被外部try catch 导致程序崩溃，如 `番薯动漫.js` 里的写法
 
 ## 安装说明
 
