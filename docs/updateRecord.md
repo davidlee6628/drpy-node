@@ -1,5 +1,111 @@
 # drpyS更新记录
 
+### 20250822
+
+更新至V1.2.17
+
+1. 增加一堆 `hipy` 模板源 和相关APP模板
+2. hipy spider 增加 `setCache` `getCache` 函数
+3. map.txt 分隔符从 `@` 改为 `@@`
+4. 优化hipy守护进程执行逻辑，改善性能、稳定性、内存管理
+
+### 20250821
+
+更新至V1.2.16
+
+1. 增加一堆 `hipy` 源
+2. 增加 `live2cms.json` 增加一条本代线路
+3. 猫源解析引擎默认 0 和 1 都视为url模式，以前base64模式有Bug调整 `CAT_DEBUG=2` 开启
+4. 完善hipy源和cat源的map传参机制，map里传参分发源，不用手写配置文件的ext
+5. 修复 `猫爪` 软件不支持 源的ext为object对象的问题
+6. 设置中心增加 `兼容性配置` 开关，目的是让配置带object的场景自动变成字符串用于兼容老旧的壳子
+
+已知bug(待壳子适配):
+
+1. 宝盒不支持ext直接传链接，即使是外网它也会去访问ext然后把源码丢给后续请求导致不正确(drpyHiker和装逼壳子正常)
+2. drpyHiker不支持ext传递object类型，json层面没有进行object转json操作，导致后续接口请求用的 [object Object]
+
+### 20250819
+
+更新至V1.2.15
+
+1. 通过信号监听机制保证linux的pm2管理能正常结束hipy的守护进程
+2. 增加哔哩少儿
+3. 增加 `风车动漫` cat源
+4. 优化 `index.js` 代码结构，静态目录定义移动至 controllers中的 `static.js`
+
+### 20250818
+
+更新至V1.2.14
+
+1. 修复 cat源内import assets库处理逻辑错误，推荐环境变量开启 `CAT_DEBUG=1`
+2. 重构py源执行逻辑，确保代码健壮性和py执行性能最强。
+3. 尝试修复 vercel没写文件权限导致的整个项目无法启动问题（vercel无法支持py源)
+4. 修复两个py源
+
+### 20250817
+
+更新至V1.2.13
+
+支持hipy源T4,参考[python环境](/docs/pyenv.md) 进行python依赖安装。
+需要保证终端输入 `python` 能正常识别到即可(保证本地安装了python并且有环境变量)
+
+1. 增加 `hipy` 适配器
+2. 新增依赖 `python-shell` 需要手动安装
+3. 统一libs接口 `cate` 改为 `category`
+4. 修复了 定时任务 `execute-now` 接口返回数据错误
+5. 目前py源的T4支持 ext扩展、getDependence依赖、以及 本地代理 和 动作，凑合能用，代码实现很狗屎。
+
+### 20250815
+
+更新至V1.2.12
+
+关键更新说明: 前面版本不支持cat源内import其他依赖，相对路径都不支持更别说 assets开头的了。
+此版本解决了，用法跟壳子一样，支持`assets://`（映射到spider/catLib） 和相对路径 `./` `../`开头的依赖
+
+1. 修复 `番茄小说` 分类 by 二群 `ƪ(˘⌣˘)ʃ优雅`
+2. 修复 `抖音弹幕直播` by 二群 `ƪ(˘⌣˘)ʃ优雅`
+3. catvod猫源支持import assets开头依赖，ds非调试模式下已经补齐依赖。
+4. 增加 `esm-register.mjs` 通过拦截import导入的esm模块，实现猫源的 `assets:` 导入识别，路径映射到 `spider/catLib`
+5. 增加 cat源 `河南电视代理.js` 用于演示正确的猫源本代写法。action也支持。
+6. 修复猫源T4首页推荐数据问题。
+
+### 20250814
+
+更新至V1.2.11
+
+1. 定时任务 增加 `QQ邮箱` 的消息推送方式
+2. `cat源` 增加调试模式，但是不支持 `getProxyUrl` 等方法，需要在环境变量.env文件里启用 `CAT_DEBUG=1`。
+   详情参考 [猫源调试教程](/docs/catDebug.md)
+3. `getProxyUrl` 换成 `getProxy`，兼容T3猫源使用壳子的本地代理,修复 `央视大全` 错误的本地代理获取
+4. 修复`番茄小说` 的正文阅读和搜索。分类接口坏的没能力修。央视最新视频高清下载方案目前只有通过 [
+   `CCTV-GO`](https://wwvy.lanzouo.com/ieEq533kiofe) 包含的 `cbox.exe` 本地解密，无法适配本项目。
+
+### 20250813
+
+更新至V1.2.10
+
+1. 调整首页的文档超链接，定时任务从接口文档里抽出来，订阅过滤内的自动带pwd。文档 /docs 路由增加basic验证防止被盗用接口
+2. 定时任务 /tasks路由返回信息的lastrun和nextrun显示优化，从UTC时间改成北京时间
+3. 尝试支持cat源的本地代理功能，增加`getProxyUrl` 函数,T4增加 `ENV` 对象
+4. 去除 `adapt` 属性 改为 `do` 属性
+
+### 20250812
+
+更新至V1.2.9
+
+已知bug: cat源动态修改代码后如果没重启后端服务，修改的内容不生效(通过打日志看出来的，原因是esm模块缓存)  
+因此代码里通过`?v=文件hash值` 绕过esm缓存机制，不确定会不会造成内存占用问题。  
+定时任务脚本也存在类似问题，但是没做绕过，必须重启服务。
+
+```javascript
+const scriptUrl = `${pathToFileURL(filePath).href}?v=${fileHash}`;
+```
+
+1. py和猫源支持头信息处放ext扩展参数
+2. cat猫源支持T4模式(需要设置中心enable_cat设置为2)
+3. cat t4源支持使用 `req` `jsoup` 等对象，由于drpyS导入在前，理论上drpyS里所有globalThis暴露的变量都可以用
+
 ### 20250810
 
 更新至V1.2.8

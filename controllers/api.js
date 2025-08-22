@@ -5,10 +5,10 @@ import {ENV} from "../utils/env.js";
 import {validatePwd} from "../utils/api_validate.js";
 import {startJsonWatcher, getApiEngine} from "../utils/api_helper.js";
 import * as drpyS from '../libs/drpyS.js';
-import * as drpy2 from '../libs/drpy2.js';
-import * as hipy from '../libs/hipy.js';
-import * as xbpq from '../libs/xbpq.js';
-import * as catvod from '../libs/catvod.js';
+import drpy2 from '../libs/drpy2.js';
+import hipy from '../libs/hipy.js';
+import xbpq from '../libs/xbpq.js';
+import catvod from '../libs/catvod.js';
 
 const ENGINES = {
     drpyS,
@@ -45,9 +45,6 @@ export default (fastify, options, done) => {
             // console.log('moduleExt:', typeof moduleExt, moduleExt);
             const protocol = request.headers['x-forwarded-proto'] || (request.socket.encrypted ? 'https' : 'http');
             const hostname = request.hostname;
-            // const proxyUrl = `${protocol}://${hostname}${request.url}`.split('?')[0].replace('/api/', '/proxy/') + '/?do=js';
-            // const proxyUrl = `${protocol}://${hostname}/proxy/${moduleName}/?do=js`;
-            // console.log('proxyUrl:', proxyUrl);
             const publicUrl = `${protocol}://${hostname}/public/`;
             const jsonUrl = `${protocol}://${hostname}/json/`;
             const httpUrl = `${protocol}://${hostname}/http`;
@@ -57,7 +54,7 @@ export default (fastify, options, done) => {
 
             // console.log(`proxyUrl:${proxyUrl}`);
             function getEnv(moduleName) {
-                const proxyUrl = `${protocol}://${hostname}/proxy/${moduleName}/?do=js`;
+                const proxyUrl = `${protocol}://${hostname}/proxy/${moduleName}/?do=${query.do||'ds'}`;
                 const getProxyUrl = function () {
                     return proxyUrl
                 };
@@ -93,7 +90,7 @@ export default (fastify, options, done) => {
                             invokeMethod = 'homeVod';
                             break;
                         case '一级':
-                            invokeMethod = 'cate';
+                            invokeMethod = 'category';
                             break;
                         case '二级':
                             invokeMethod = 'detail';
@@ -144,7 +141,7 @@ export default (fastify, options, done) => {
                         }
                     }
                     // 分类逻辑
-                    const result = await apiEngine.cate(modulePath, env, query.t, pg, 1, extend);
+                    const result = await apiEngine.category(modulePath, env, query.t, pg, 1, extend);
                     return reply.send(result);
                 }
 
@@ -187,6 +184,7 @@ export default (fastify, options, done) => {
                     ...resultHome,
                     // list: resultHomeVod,
                 };
+                // console.log('resultHomeVod:',resultHomeVod);
                 if (Array.isArray(resultHomeVod) && resultHomeVod.length > 0) {
                     Object.assign(result, {list: resultHomeVod})
                 }
@@ -206,8 +204,9 @@ export default (fastify, options, done) => {
     fastify.get('/proxy/:module/*', async (request, reply) => {
         const moduleName = request.params.module;
         const query = request.query; // 获取 query 参数
-
+        // console.log(query);
         let {apiEngine, modulePath} = getApiEngine(ENGINES, moduleName, query, options);
+        // console.log(modulePath);
         if (!existsSync(modulePath)) {
             reply.status(404).send({error: `Module ${moduleName} not found`});
             return;
@@ -228,7 +227,7 @@ export default (fastify, options, done) => {
         const fServer = fastify.server;
 
         function getEnv(moduleName) {
-            const proxyUrl = `${protocol}://${hostname}/proxy/${moduleName}/?do=js`;
+            const proxyUrl = `${protocol}://${hostname}/proxy/${moduleName}/?do=${query.do||'ds'}`;
             const getProxyUrl = function () {
                 return proxyUrl
             };
@@ -333,8 +332,7 @@ export default (fastify, options, done) => {
         const fServer = fastify.server;
 
         function getEnv(moduleName) {
-            // const proxyUrl = `${protocol}://${hostname}/proxy/${moduleName}/?do=js`;
-            const proxyUrl = `${protocol}://${hostname}${request.url}`.split('?')[0].replace('/parse/', '/proxy/') + '/?do=js';
+            const proxyUrl = `${protocol}://${hostname}${request.url}`.split('?')[0].replace('/parse/', '/proxy/') + `/?do=${query.do||"ds"}`;
             const getProxyUrl = function () {
                 return proxyUrl
             };

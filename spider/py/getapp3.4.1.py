@@ -1,17 +1,10 @@
 """
 @header({
-	title: "AppGet",
-	exts: {
-		"小羊4k": {
-			"host": "https://appcms.xy4k.com",
-			"datakey": "7SDWjknU34zqFbVr"
-		},
-		"鲸鱼影视": {
-			"host": "https://jingyu4k-1312635929.cos.ap-nanjing.myqcloud.com/1.json",
-			"datakey": "AAdgrdghjfgswerA",
-			"api": 2
-		}
-	}
+  searchable: 1,
+  filterable: 1,
+  quickSearch: 1,
+  title: 'getapp3.4.1',
+  lang: 'hipy'
 })
 """
 
@@ -36,10 +29,10 @@ class Spider(BaseSpider):
     }
 
     def getName(self):
-        return "首页"
+        return "getapp3.4.1"
 
     def init(self, extend):
-        js1=json.loads(extend)
+        js1=json.loads(self.extend)
         host = js1['host']
         if not re.match(r'^https?:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(:\d+)?(\/)?$',host):
             host = self.fetch(host, headers=self.headerx, timeout=10, verify=False).text.rstrip('/')
@@ -47,7 +40,7 @@ class Spider(BaseSpider):
         if str(api) == '2':
             api = '/api.php/qijiappapi'
         self.xurl = host + api
-        self.key = js1['datakey']
+        self.key = js1.get('datakey') or js1.get('key')
         self.iv = js1.get('dataiv',self.key)
         res = self.fetch(self.xurl + '.index/initV119', headers=self.headerx, verify=False).json()
         encrypted_data = res['data']

@@ -9,6 +9,7 @@
 */
 
 async function init(cfg) {
+    const ext = cfg.ext;
     cfg.skey = '';
     cfg.stype = '3';
 }
@@ -19,6 +20,10 @@ let imghost = `https://${JSON.parse((await req(`${host}/api/appAuthConfig`)).con
 
 //分类数据
 async function home(filter) {
+    // console.log('typeof getProxy:', typeof getProxy);
+    // if (typeof getProxy === 'function') {
+    //     console.log('getProxy(true):', getProxy(true));
+    // }
     let classes = [{type_id: '1', type_name: '电影',}, {type_id: '2', type_name: '电视剧',}, {
         type_id: '3',
         type_name: '动漫',
